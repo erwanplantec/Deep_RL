@@ -12,17 +12,17 @@ import matplotlib.pyplot as plt
 
 from Agent import DDPG_Agent
 
-def train(epochs, agent, env, epsilon = 1, delta_epsilon = -.005, 
-          epsilon_min = .001):
+def train(episodes, agent, env):
     """
     Training procedure
     """
     
     perfs = []
+    timesteps = 0
     
-    for epoch in range(epochs):
+    for episode in range(episodes):
         
-        epoch_rews = 0
+        ep_rews = 0
         
         obs = env.reset()
         
@@ -31,10 +31,7 @@ def train(epochs, agent, env, epsilon = 1, delta_epsilon = -.005,
         while not done:
             
             #==============Take an action====================
-            if np.random.random() < epsilon :
-                action = env.action_space.sample()
-            else :
-                action = agent.choose_action(obs)
+            action = agent.choose_action(obs, noise = True)
             new_obs, reward, done, info = env.step(action) # take a random action
             
             #==============Store transition==================
@@ -43,15 +40,15 @@ def train(epochs, agent, env, epsilon = 1, delta_epsilon = -.005,
             agent.learn()
             
             obs = new_obs
-            epoch_rews += reward
+            ep_rews += reward
+            timesteps += 1
             
-        
         if verbose :
-            print("Epoch {}, rewards : {}, epslon {}".format(epoch + 1, epoch_rews, epsilon))
+            print("Episode {}, timestep {}, rewards : {}".
+                format(episode + 1, timesteps, ep_rews))
             
-        perfs.append(epoch_rews)
+        perfs.append(ep_rews)
         
-        epsilon += delta_epsilon
         #====================================================
     
     return perfs
@@ -82,15 +79,13 @@ epochs = 1000
 
 actor_hidden_dims = [400, 300]
 critic_hidden_dims = [400, 300]
-learning_rate_actor = .00025
-learning_rate_critic = .000025
+learning_rate_actor = 1e-2
+learning_rate_critic = 1e-3
 
 tau = .001
 gamma = .99
 mem_size = 1000000
 batch_size = 64
-epsilon = 1
-delta_epsion = -.005
 
 verbose = True
 
@@ -110,7 +105,7 @@ for seed in range(nb_seeds):
                        tau = tau)
     
     #===============Train===========================
-    perfs.append(train(epochs, agent, env, epsilon))
+    perfs.append(train(epochs, agent, env))
     agents.append(agent)
         
     #==================Plots========================

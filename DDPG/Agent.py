@@ -13,6 +13,7 @@ from torch.functional import F
 from Critic import Critic_Network
 from Actor import Actor_Network
 from ReplayBuffer import Replay_Buffer
+from OUNoise import OUNoise
 
 #==============================================================================
 #==============================================================================
@@ -42,6 +43,8 @@ class DDPG_Agent :
         
         self.replay_buffer = Replay_Buffer(state_dims, action_dims, mem_size, 
                                            batch_size)
+
+        self.ou_noise = OUNoise(action_dims)
         
         self.batch_size = batch_size
         
@@ -51,10 +54,14 @@ class DDPG_Agent :
         
         self.update_networks(1)
     #--------------------------------------------------------------------------
-    def choose_action(self, state):
+    def choose_action(self, state, noise = False):
         
         state = T.tensor( state , dtype = T.float32 ).to(self.actor.device)
         action = self.actor.forward(state)
+
+        if noise :
+        	noise = T.tensor(self.ou_noise.noise())
+        	action += noise
         
         return action.detach().numpy()
     #--------------------------------------------------------------------------
