@@ -80,10 +80,8 @@ def test(env, agent, render = True):
 nb_seeds = 1
 epochs = 1000
 
-fc1_actor = 400
-fc2_actor = 300
-fc1_critic = 400
-fc2_critic = 300
+actor_hidden_dims = [400, 300]
+critic_hidden_dims = [400, 300]
 learning_rate_actor = .00025
 learning_rate_critic = .000025
 
@@ -106,8 +104,8 @@ for seed in range(nb_seeds):
     env = gym.make('LunarLanderContinuous-v2')
     
     #==============Setup Agent======================
-    agent = DDPG_Agent(8, 2,batch_size, mem_size, fc1_actor, fc2_actor, 
-                       fc1_critic, fc2_critic,lr_actor = learning_rate_actor, 
+    agent = DDPG_Agent(8, 2,batch_size, mem_size, actor_hidden_dims, 
+                       critic_hidden_dims, lr_actor = learning_rate_actor, 
                        lr_critic = learning_rate_critic, gamma = gamma, 
                        tau = tau)
     

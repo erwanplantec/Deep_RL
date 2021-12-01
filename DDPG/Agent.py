@@ -23,19 +23,22 @@ from ReplayBuffer import Replay_Buffer
 class DDPG_Agent :
     #--------------------------------------------------------------------------
     def __init__(self, state_dims, action_dims, batch_size, mem_size,
-                 fc1_actor_dims, fc2_actor_dims, fc1_critic_dims, 
-                 fc2_critic_dims, gamma = .98, lr_critic = .001, 
-                 lr_actor = .001, tau = .003):
+                 actor_hidden_dims, critic_hidden_dims, gamma = .98, 
+                 lr_critic = .001, lr_actor = .001, tau = .003):
         
-        self.critic = Critic_Network(state_dims, action_dims, fc1_critic_dims, 
-                                     fc2_critic_dims)
+        self.critic = Critic_Network(state_dims, action_dims, 
+                                     critic_hidden_dims, 
+                                     learning_rate = lr_critic)
+        
         self.target_critic = Critic_Network(state_dims, action_dims, 
-                                            fc1_critic_dims, fc2_critic_dims)
+                                            critic_hidden_dims)
         
-        self.actor = Actor_Network(state_dims, action_dims, fc1_actor_dims, 
-                                   fc2_actor_dims)
-        self.target_actor = Actor_Network(state_dims, action_dims, fc1_actor_dims, 
-                                   fc2_actor_dims)
+        self.actor = Actor_Network(state_dims, action_dims, 
+                                   actor_hidden_dims, 
+                                   learning_rate = lr_actor)
+        
+        self.target_actor = Actor_Network(state_dims, action_dims, 
+                                          actor_hidden_dims)
         
         self.replay_buffer = Replay_Buffer(state_dims, action_dims, mem_size, 
                                            batch_size)
@@ -61,6 +64,8 @@ class DDPG_Agent :
                                             reward, done)
     #--------------------------------------------------------------------------
     def learn(self):
+        if self.replay_buffer.counter < self.batch_size:
+            return
         #=================get batch==================
         states, new_states, actions, rewards, dones = \
             self.replay_buffer.get_batch()

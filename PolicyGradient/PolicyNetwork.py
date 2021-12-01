@@ -45,4 +45,7 @@ class PolicyNetwork(nn.Module):
     #--------------------------------------------------------------------------
     def save(self, filename):
         T.save(self.state_dict(), filename)
+    #--------------------------------------------------------------------------
+    def load(self, filename):
+        self.load_state_dict(T.load(filename))
     
