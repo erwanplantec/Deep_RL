@@ -36,7 +36,7 @@ def train(episodes, agent, env):
             
             #==============Store transition==================
             transition = (obs, action, new_obs, reward, done)
-            agent.store_transition(*transition)
+            agent.store_transition( *transition )
             agent.learn()
             
             obs = new_obs

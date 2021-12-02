@@ -157,29 +157,3 @@ class DDPG_Agent :
         self.target_actor.load(filename + "_actor_t")
         self.target_critic.load(filename + "_critic_t")
         
-
-
-        
-
-        
-        
-
-        
-        
-    
-        
-        
-            
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
