@@ -100,7 +100,7 @@ class DDPG_Agent :
         
         #==========Train the critic==================
         self.critic.train()
-        self.critic.zero_grad()
+        self.critic.optimizer.zero_grad()
         critic_loss = F.mse_loss(critic_pred, targets)
         critic_loss.backward()
         self.critic.optimizer.step()
