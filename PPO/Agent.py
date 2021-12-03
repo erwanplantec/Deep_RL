@@ -33,7 +33,7 @@ class Agent :
 		"""
 		state = T.tensor([state], dtype = T.float32)
 
-		dist = Categorical(logits = self.actor.forward(state))
+		dist = Categorical(probs = self.actor.forward(state))
 
 		action = dist.sample()
 
@@ -75,13 +75,14 @@ class Agent :
 			actions_mb = T.tensor(actions[batch])
 			
 			#=============Compute policy loss==============
-			dist = Categorical(logits = self.actor.forward(states_mb))
+			dist = Categorical(probs = self.actor.forward(states_mb))
 			pi_new = dist.log_prob(actions_mb).unsqueeze(1)
 
 			r = (pi_new - pi_old).exp()
 
 			w = r * advantages[batch]
-			w_clip = T.clamp(r, 1 - self.epsilon, 1 + self.epsilon) * advantages[batch]
+			w_clip = T.clamp(r, 1 - self.epsilon, 1 + self.epsilon) \
+							* advantages[batch]
 
 			policy_loss = - T.min(w, w_clip).mean()
 

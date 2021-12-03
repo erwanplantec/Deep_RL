@@ -19,6 +19,7 @@ class Actor_Network(nn.Module):
 			layers.append(nn.Linear(dims[i], dims[i + 1]))
 			layers.append(act_fn())
 		layers.append(nn.Linear(dims[-1], n_actions))
+		layers.append(nn.Softmax())
 
 		self.network = nn.Sequential(*layers)
 

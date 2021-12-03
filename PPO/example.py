@@ -14,8 +14,8 @@ epsilon = .2 #from paper
 episodes = 400
 env_name = "CartPole-v1"
 
-critic_dims = [32, 32]
-actor_dims = [32, 32]
+critic_dims = [100, 100]
+actor_dims = [100, 100]
 
 if __name__ == '__main__':
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
 	returns, avg_returns = train(agent, env, episodes, N)
 
-	#plt.plot(returns, label = "returns")
+	plt.plot(returns, label = "returns", alpha = .2)
 	plt.plot(avg_returns, label = "avg_returns")
 	plt.legend()
 	plt.show()
