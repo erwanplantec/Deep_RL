@@ -10,7 +10,7 @@ import numpy as np
 from Agent import *
 import matplotlib.pyplot as plt
 
-from Agent import DDPG_Agent
+from Agent import Agent
 
 def train(episodes, agent, env):
     """
@@ -99,7 +99,7 @@ for seed in range(nb_seeds):
     env = gym.make('LunarLanderContinuous-v2')
     
     #==============Setup Agent======================
-    agent = DDPG_Agent(8, 2,batch_size, mem_size, actor_hidden_dims, 
+    agent = Agent(8, 2,batch_size, mem_size, actor_hidden_dims, 
                        critic_hidden_dims, lr_actor = learning_rate_actor, 
                        lr_critic = learning_rate_critic, gamma = gamma, 
                        tau = tau)

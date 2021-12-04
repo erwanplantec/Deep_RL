@@ -21,7 +21,7 @@ from OUNoise import OUNoise
 #==============================================================================
 #==============================================================================
 
-class DDPG_Agent :
+class Agent :
     #--------------------------------------------------------------------------
     def __init__(self, state_dims, action_dims, batch_size, mem_size,
                  actor_hidden_dims, critic_hidden_dims, gamma = .98, 
