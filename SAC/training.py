@@ -1,6 +1,6 @@
 import numpy as np
 
-def train(agent, env, episodes, verbose = True):
+def train(agent, env, episodes, verbose = True, warmup = 0):
 
 	returns = []
 	avg_returns = []
@@ -13,7 +13,10 @@ def train(agent, env, episodes, verbose = True):
 
 		while not done :
 
-			a = agent.choose_action(s)
+			if episode < warmup :
+				a = env.action_space.sample()
+			else :
+				a = agent.choose_action(s)
 
 			s_, r, done, _ = env.step(a)
 
@@ -22,6 +25,8 @@ def train(agent, env, episodes, verbose = True):
 			agent.store_transition(s, a, s_, r, done)
 
 			agent.learn()
+
+			s = s_
 
 		returns.append(ep_rews)
 		avg_returns.append(np.mean(returns[-100:]))

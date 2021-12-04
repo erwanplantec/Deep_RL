@@ -1,6 +1,7 @@
 import torch as T
 import torch.nn as nn
 import numpy as np
+from torch.distributions.normal import Normal
 
 class Actor_Network(nn.Module):
 	#--------------------------------------------------------------------------
@@ -21,6 +22,7 @@ class Actor_Network(nn.Module):
 			layers.append(nonlinearity())
 
 		self.network = nn.Sequential(*layers)
+
 		self.mu = nn.Linear(dims[-1], self.action_dims)
 		self.sigma = nn.Linear(dims[-1], self.action_dims)
 
@@ -30,6 +32,7 @@ class Actor_Network(nn.Module):
 		common = self.network(state)
 		mu = self.mu(common)
 		sigma = self.sigma(common)
+		sigma = T.clamp(sigma, 1e-6, 1)
 
 		return mu, sigma
 

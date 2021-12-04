@@ -6,7 +6,6 @@ Created on Wed Nov 10 17:56:04 2021
 """
 
 import numpy as np
-import random
 
 class Replay_Buffer :
     #--------------------------------------------------------------------------

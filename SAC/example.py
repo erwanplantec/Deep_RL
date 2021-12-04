@@ -1,21 +1,22 @@
+import pybullet_envs
 from training import train
 from Agent import Agent
 import gym
 
 import matplotlib.pyplot as plt
 
-env_name = "LunarLanderContinuous-v2"
+env_name = "InvertedPendulumBulletEnv-v0"
 actor_hidden_dims = [256, 256]
 critic_hidden_dims = [256, 256]
 
-lr_actor = lr_critic = 1e-3
+lr_actor = lr_critic = 3e-4
 
 gamma = .99
 alpha = .2
-tau = .0035
+tau = .005
 
 batch_size = 256
-mem_size = int(1e6)	
+mem_size = int(1e6)
 
 episodes = 300
 

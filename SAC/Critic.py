@@ -52,7 +52,7 @@ class Value_Network(nn.Module):
 
 		self.network = nn.Sequential(*layers)
 
-		self.optimizer = nn.optim.Adam(self.parameters(), lr = lr)
+		self.optimizer = T.optim.Adam(self.parameters(), lr = lr)
 	#--------------------------------------------------------------------------
 	def forward(self, state):
 		V_s = self.network(state)
