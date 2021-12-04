@@ -7,7 +7,7 @@ Created on Mon Nov 29 19:13:08 2021
 
 import gym
 
-from PolicyGradient.Agent import Agent
+from Agent import Agent
 
 import numpy as np
 import torch as T
@@ -93,10 +93,12 @@ if __name__ == '__main__':
     
     env = gym.make("CartPole-v1")
     
-    agent = Agent(4, 2, [32], lr = 1e-2, weights = "rtg")
+    agent = Agent(4, 2, [32], lr = 1e-2, weights = "discounted")
     
     ret = train(agent, env, 50)
     
     plt.plot(ret)
+
+    plt.show()
     
     

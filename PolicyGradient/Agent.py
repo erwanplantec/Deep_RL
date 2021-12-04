@@ -11,17 +11,20 @@ import torch.nn as nn
 from torch.functional import F
 from torch.distributions import Categorical
 
-from PolicyGradient.PolicyNetwork import PolicyNetwork
+from PolicyNetwork import PolicyNetwork
 
 class Agent :
     #--------------------------------------------------------------------------
     def __init__(self, state_dims, n_actions, hidden_sizes, lr = 1e-2,
-                 weights = "vanilla"):
+                 weights = "vanilla", gamma = .99):
         
+        self.gamma = gamma #used only of weights = "discounted"
         if weights == "vanilla":
             self._get_weights = self._traj_returns
         elif weights == "rtg":
             self._get_weights = self._rtg
+        elif weights == "discounted":
+            self._get_weights = self._discounted
         else :
             raise NameError(f"{weights} is not an available weight method")
         
@@ -89,12 +92,22 @@ class Agent :
         rtgs = []
         for i in range(len(self.episode_indexes) - 1):
             start, end = self.episode_indexes[i], self.episode_indexes[i + 1]
-            for i in range(end - start):
+            for di in range(end - start):
                 # Compute sum of rewards until end of trajectory
-                rtg = np.sum(self.rews_mem[start + i : end])
+                rtg = np.sum(self.rews_mem[start + di : end])
                 rtgs.append(rtg)
                 
         return rtgs
+    #--------------------------------------------------------------------------
+    def _discounted(self):
+        weights = []
+        for i in range(len(self.episode_indexes) - 1):
+            start, end = self.episode_indexes[i], self.episode_indexes[i + 1]
+            for di in range(end - start):
+                disc = np.sum([pow(self.gamma, dt) * r 
+                    for dt, r in enumerate(self.rews_mem[start + di : end])])
+                weights.append(disc)
+        return weights
     #--------------------------------------------------------------------------
     def save(self, filename):
         self.policy_net.save(filename)
