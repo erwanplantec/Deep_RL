@@ -35,4 +35,7 @@ class Actor_Network(nn.Module):
 		sigma = T.clamp(sigma, 1e-6, 1)
 
 		return mu, sigma
+	#--------------------------------------------------------------------------
+	def save(self, filename):
+		T.save(self.state_dict(), filename + ".pt")
 

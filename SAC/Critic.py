@@ -31,6 +31,9 @@ class Critic_Network(nn.Module):
 		Q_sa = self.network(state_action)
 
 		return Q_sa
+	#--------------------------------------------------------------------------
+	def save(self, filename):
+		T.save(self.state_dict(), filename + ".pt")
 
 class Value_Network(nn.Module):
 	#--------------------------------------------------------------------------
@@ -57,3 +60,6 @@ class Value_Network(nn.Module):
 	def forward(self, state):
 		V_s = self.network(state)
 		return V_s
+	#--------------------------------------------------------------------------
+	def save(self, filename):
+		T.save(self.state_dict(), filename + ".pt")

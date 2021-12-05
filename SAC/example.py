@@ -9,6 +9,9 @@ env_name = "InvertedPendulumBulletEnv-v0"
 actor_hidden_dims = [256, 256]
 critic_hidden_dims = [256, 256]
 
+save_file = "saved_networks/SAC_InvertedPendulum"
+plt_file = "plots/SAC_InvertedPendulum.png"
+
 lr_actor = lr_critic = 3e-4
 
 gamma = .99
@@ -28,11 +31,14 @@ if __name__ == "__main__":
 		mem_size, batch_size, lr_critic, lr_actor, gamma,
 		alpha, tau)
 
+	agent.save(save_file)
+
 	returns, avg_returns = train(agent, env, episodes)
 
 	plt.plot(returns, alpha = .2, label = "returns")
 	plt.plot(avg_returns, label = "running average")
 	plt.legend()
+	plt.savefig(plt_file)
 	plt.show()
 
 

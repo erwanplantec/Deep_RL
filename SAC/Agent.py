@@ -109,25 +109,6 @@ class Agent :
 		
 		self.V.optimizer.step()
 
-		#==================Update policy==================
-		actions_pi, log_probs = self.sample_action(states, 
-										reparameterize = True)
-		log_probs = log_probs.view(-1)
-
-		Q_values = T.min(
-			self.Q_1.forward(states, actions_pi),
-			self.Q_2.forward(states, actions_pi)
-			)
-		Q_values = Q_values.view(-1)
-
-		pi_loss = T.mean( log_probs - Q_values )
-
-		self.actor.optimizer.zero_grad()
-		
-		pi_loss.backward(retain_graph = True)
-		
-		self.actor.optimizer.step()
-
 		#==================Update Q_nets==================
 		self.Q_1.optimizer.zero_grad()
 		self.Q_2.optimizer.zero_grad()
@@ -147,6 +128,25 @@ class Agent :
 		self.Q_1.optimizer.step()
 		self.Q_2.optimizer.step()
 
+		#==================Update policy==================
+		actions_pi, log_probs = self.sample_action(states, 
+										reparameterize = True)
+		log_probs = log_probs.view(-1)
+
+		Q_values = T.min(
+			self.Q_1.forward(states, actions_pi),
+			self.Q_2.forward(states, actions_pi)
+			)
+		Q_values = Q_values.view(-1)
+
+		pi_loss = T.mean( log_probs - Q_values )
+
+		self.actor.optimizer.zero_grad()
+		
+		pi_loss.backward(retain_graph = True)
+		
+		self.actor.optimizer.step()
+
 		#================Update target nets==============
 		self.update_networks()
 
@@ -160,3 +160,10 @@ class Agent :
 			target_param.data.copy_(
 				target_param.data * (1. - tau) + param.data * tau
 				)
+	#--------------------------------------------------------------------------
+	def save(self, filename):
+		self.Q_1.save(filename + "_Q1")
+		self.Q_2.save(filename + "_Q2")
+		self.V.save(filename + "_V")
+		self.target_V.save(filename + "_V_target")
+		self.actor.save(filename + "_actor")
