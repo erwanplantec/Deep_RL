@@ -1,21 +1,24 @@
 import numpy as np
 
 
-# from https://github.com/MoritzTaylor/ddpg-pytorch/blob/master/utils/noise.py
-class OUNoise:
-    def __init__(self, action_dimension, dt=0.01, mu=0, theta=0.15, sigma=0.2):
-        self.action_dimension = action_dimension
-        self.dt = dt
-        self.mu = mu
+class OUActionNoise(object):
+    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
         self.theta = theta
+        self.mu = mu
         self.sigma = sigma
+        self.dt = dt
+        self.x0 = x0
         self.reset()
 
-    def reset(self):
-        self.state = np.ones(self.action_dimension) * self.mu
+    def __call__(self):
+        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
+            self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
+        self.x_prev = x
+        return x
 
-    def noise(self):
-        x = self.state
-        dx = self.theta * (self.mu - x) * self.dt + self.sigma * np.random.randn(len(x)) * np.sqrt(self.dt)
-        self.state = x + dx
-        return self.state
+    def reset(self):
+        self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
+
+    def __repr__(self):
+        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(
+                                                            self.mu, self.sigma)

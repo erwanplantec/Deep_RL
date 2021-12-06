@@ -36,8 +36,8 @@ class Critic_Network(nn.Module):
         self.to(device)
     #--------------------------------------------------------------------------
     def forward(self, state, action):
-        state_action = T.concat((state, action), 
-                                dim = len(state.shape) - 1)
+        state_action = T.cat((state, action), 
+                                dim = 1)
         
         return self.network(state_action)
     #--------------------------------------------------------------------------

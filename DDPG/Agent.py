@@ -13,7 +13,7 @@ from torch.functional import F
 from Critic import Critic_Network
 from Actor import Actor_Network
 from ReplayBuffer import Replay_Buffer
-from OUNoise import OUNoise
+from OUNoise import OUActionNoise
 
 #==============================================================================
 #==============================================================================
@@ -23,28 +23,33 @@ from OUNoise import OUNoise
 
 class Agent :
     #--------------------------------------------------------------------------
-    def __init__(self, state_dims, action_dims, batch_size, mem_size,
+    def __init__(self, env, batch_size, mem_size,
                  actor_hidden_dims, critic_hidden_dims, gamma = .98, 
                  lr_critic = .001, lr_actor = .001, tau = .003):
         
-        self.critic = Critic_Network(state_dims, action_dims, 
+        self.state_dims = env.observation_space.shape[0]
+        self.action_dims = env.action_space.shape[0]
+        self.max_actions = T.tensor(env.action_space.high)
+        self.min_actions = T.tensor(env.action_space.low)
+
+        self.critic = Critic_Network(self.state_dims, self.action_dims, 
                                      critic_hidden_dims, 
                                      learning_rate = lr_critic)
         
-        self.target_critic = Critic_Network(state_dims, action_dims, 
+        self.target_critic = Critic_Network(self.state_dims, self.action_dims, 
                                             critic_hidden_dims)
         
-        self.actor = Actor_Network(state_dims, action_dims, 
+        self.actor = Actor_Network(self.state_dims, self.action_dims, 
                                    actor_hidden_dims, 
                                    learning_rate = lr_actor)
         
-        self.target_actor = Actor_Network(state_dims, action_dims, 
+        self.target_actor = Actor_Network(self.state_dims, self.action_dims, 
                                           actor_hidden_dims)
         
-        self.replay_buffer = Replay_Buffer(state_dims, action_dims, mem_size, 
-                                           batch_size)
+        self.replay_buffer = Replay_Buffer(self.state_dims, self.action_dims, 
+                                           mem_size, batch_size)
 
-        self.ou_noise = OUNoise(action_dims)
+        self.ou_noise = OUActionNoise(mu = np.zeros(self.action_dims))
         
         self.batch_size = batch_size
         
@@ -60,7 +65,7 @@ class Agent :
         action = self.actor.forward(state)
 
         if noise :
-        	noise = T.tensor(self.ou_noise.noise())
+        	noise = T.tensor(self.ou_noise(), dtype = T.float32)
         	action += noise
         
         return action.detach().numpy()
@@ -80,11 +85,8 @@ class Agent :
         states = T.tensor(states, dtype = T.float32)
         new_states = T.tensor(new_states, dtype = T.float32)
         actions = T.tensor(actions, dtype = T.float32)
-        
-        self.actor.eval()
-        self.critic.eval()
-        self.target_actor.eval()
-        self.target_critic.eval()
+        dones = T.tensor(dones, dtype = T.float32).view(-1, 1)
+        rewards = T.tensor(rewards, dtype = T.float32).view(-1, 1)
         
         #===========Compute critic predictions=======
         target_actions = self.target_actor.forward(new_states)
@@ -92,26 +94,19 @@ class Agent :
         critic_pred = self.critic.forward(states, actions)
         
         #===========Compute critic targets===========
-        targets = []
-        for i in range(self.batch_size) :
-            targets.append([ rewards[i] +  self.gamma * critic_ns_values[i] * 
-                            (1 - dones[i])])
-        targets = T.tensor(targets, dtype = T.float32)
+        targets = rewards + self.gamma * (1 - dones) * critic_ns_values
         
         #==========Train the critic==================
-        self.critic.train()
-        self.critic.optimizer.zero_grad()
         critic_loss = F.mse_loss(critic_pred, targets)
+        self.critic.optimizer.zero_grad()
         critic_loss.backward()
         self.critic.optimizer.step()
         
         #===========Train the actor==================
-        self.critic.eval()
         actor_values = self.actor.forward(states)
-        self.actor.train()
-        self.actor.optimizer.zero_grad()
         actor_loss = - self.critic.forward(states, actor_values) 
         actor_loss = T.mean(actor_loss)
+        self.actor.optimizer.zero_grad()
         actor_loss.backward()
         self.actor.optimizer.step()
         
@@ -139,9 +134,6 @@ class Agent :
                 (1 - tau) * target_actor_params[key].clone()
         
         self.target_actor.load_state_dict(actor_params)
-    #--------------------------------------------------------------------------
-    def noise(self, action):
-        pass
     #--------------------------------------------------------------------------
     def save(self, filename):
         self.actor.save(filename + "_actor")
