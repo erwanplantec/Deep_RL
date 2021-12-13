@@ -9,8 +9,8 @@ import gym
 
 class Agent :
 	#--------------------------------------------------------------------------
-	def __init__(self, env, hidden_dims, hidden_layers, batch_size, mem_size,
-		gamma = .99, tau = .003):
+	def __init__(self, env, gru_dims, gru_layers, hidden_dims, 
+		batch_size, mem_size, gamma = .99, tau = .003):
 		
 		self.state_dims = env.observation_space.shape[0]
 		self.n_actions = env.action_space.n
@@ -20,10 +20,10 @@ class Agent :
 		self.memory = EpisodicMemory(batch_size, mem_size)
 
 		self.drqn = DRQN(self.state_dims, self.n_actions,
-			hidden_dims, hidden_layers)
+			gru_dims, gru_layers, hidden_dims)
 		
 		self.target_drqn = DRQN(self.state_dims, self.n_actions,
-			hidden_dims, hidden_layers)
+			gru_dims, gru_layers, hidden_dims)
 		
 		self.h = None
 

@@ -5,26 +5,37 @@ from torch.functional import F
 
 class DRQN(nn.Module):
 	#--------------------------------------------------------------------------
-	def __init__(self, state_dims, n_actions, hidden_dims : int, 
-		hidden_layers : int, lr = 1e-2):
+	def __init__(self, state_dims, n_actions, gru_dims : int, gru_layers : int, 
+		hidden_dims = [], lr = 1e-2, act_fn = nn.ReLU):
 		"""
-		hidden_dims (int): dimension of GRU hidden layers
-		hidden_layers (int): number of hidden layers of GRU unit
+		gru_dims : size of gru hidden layers
+		gru_layers : number of layers in gru 
+		hidden_dims : list containing dims of subsequent hidden Linear layers (default [])
 		"""
 
 		super().__init__()
 
 		self.state_dims = state_dims
 		self.n_actions = n_actions
+		self.gru_dims = gru_dims
+		self.gru_layers = gru_layers
 		self.hidden_dims = hidden_dims
-		self.hidden_layers = hidden_layers
 
 		self.rnn = nn.GRU(input_size = state_dims,
-			hidden_size = hidden_dims,
-			num_layers = hidden_layers,
+			hidden_size = gru_dims,
+			num_layers = gru_layers,
 			batch_first = True)
+
+		fc_layers = []
+		for i in range(len(hidden_dims) - 1):
+			fc_layers.append(nn.Linear(hidden_dims[i], hidden_dims[i + 1]))
+			fc_layers.append(nn.ReLU())
+
+		self.fc_model = nn.Sequential(
+			*fc_layers,
+			nn.Linear(hidden_dims[-1], n_actions)
+			)
 		
-		self.q = nn.Linear(hidden_dims, n_actions)
 
 		self.optimizer = T.optim.Adam(self.parameters(), lr = lr)
 	#--------------------------------------------------------------------------
@@ -42,12 +53,12 @@ class DRQN(nn.Module):
 		if h is None :
 			h = T.zeros(
 				(
-					self.hidden_layers, #L
+					self.gru_layers, #L
 					state.shape[0],     #N
-					self.hidden_dims    #H
+					self.gru_dims    #H
 					)
 				)
 		x, h = self.rnn(state, h)
-		q = self.q(x)
+		q = self.fc_model(x)
 
 		return q, h
